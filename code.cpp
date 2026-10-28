@@ -2,43 +2,26 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <math.h>
 #include <random>
+#include <string>
 
-int ROW = 20;
-int COL = 20;
+const int ROW = 20;
+const int COL = 20;
+
 std::vector<std::vector<int>> newBoard;
 std::vector<std::vector<int>> currentBoard(ROW, std::vector<int>(COL));
-// std::vector<std::vector<int>> currentBoard= {
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-// };
-//
-void randomBoard(){
-  //creates a random number
-  std::random_device rd;
 
-  //we give random number to alg as a random starting point to prevent same random number every run
-  std::mt19937 gen(rd());
-  //50 percent chance of true acts as a filter for the above generated number 
+
+void randomBoard(unsigned int seed){
+if(seed ==0){ 
+
+  std::random_device rd;
+  seed = rd();
+  std::cout<<"Random seed is \n" << seed<<"\n";
+}
+
+  std::mt19937 gen(seed);
+  
   std::bernoulli_distribution distrib(0.5);
   
   for(auto &row : currentBoard){
@@ -54,7 +37,6 @@ std::cout << "\033[2J\033[H" << std::flush;
 }
 void threeSecondDelay(){
   std::this_thread::sleep_for(std::chrono::seconds(3));
-
 }
 void updateBoard()
 
@@ -75,14 +57,17 @@ void updateBoard()
             alive++;
         }
       }
-    if((alive ==2 || alive ==3) && currentBoard[r][c]==1)
-      newBoard[r][c] = 1;
-    if(alive >=4|| alive <=1)
-      newBoard[r][c]=0;
-    if((alive ==3) && currentBoard[r][c]==0)
-      newBoard[r][c] =1;
-    alive=0;
-    }
+
+      if(currentBoard[r][c] ==1 ){
+        if(alive == 0 || alive ==1 || alive >=4)
+          newBoard[r][c] = 0;
+      }
+      else {
+      if(alive ==3 )
+        newBoard[r][c] = 1;
+      }
+    alive =0;    
+   }
   } 
 }
 
@@ -95,40 +80,65 @@ void swapBoard(){
 void printBoard(){
   using namespace std;
 
+  std::cout<<string(COL*2, '-')<<"+\n";
   //printing the 2d vector
-  for(auto row:newBoard){
+  for(auto row:currentBoard){
+    std::cout<<"|";
     for(auto column : row){
-     cout<<column<<"  ";
+     cout<<(column? "\033[32m[]\033[0m":"  " );
 
     }
-    cout<<'\n';
+    cout<<"|\n";
   }
+  std::cout<<string(COL*2, '-')<<"+\n";
+
  }
+
+void stepGeneration(){ //introduced to reduce clutter in main fucntion
+  updateBoard();
+  swapBoard();
+}
+
 
 
 int main ()
 {
-  randomBoard();
+  int gen ;
+  unsigned int seed;
+
+  std::cout<<"Enter a seed or enter 0 for a random see";
+  if(!(std::cin>>seed)){
+    std::cout<<"Invalid seed input ";
+    return 1;
+  }
+  
+  randomBoard(seed);
+  
   std:: cout<<"Initial board is \n \n";
   for(auto row:currentBoard){
     for(auto column : row){
-      std::cout<<column<<"  ";
+      std::cout<<(column?"\033[32m[]\033[0m":"  ");
 
     }
     std::cout<<'\n';
   }
 
-  std::cout<<"\n \n \n";
+  std::cout<<"Enter the number of generations you want to go till \n";
+  std::cin>>gen;
 
   threeSecondDelay();
   clearScreen();
-  for(int n=0; n<5; n++){
+
+  for(int n=0; n<gen; n++){
+  stepGeneration();
+  
   clearScreen();
-  updateBoard();
+  std::cout << "\033[36mGeneration: "
+          << n + 1
+          << "\033[0m\n";
   printBoard();
-  swapBoard();
   threeSecondDelay();
-  std::cout<<"\n \n \n";
+  clearScreen();
   }
   return 0;
 }
